@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>十三班逆袭日志 · 全成就公开版 | 班级逆袭模拟器</title>
+    <!-- Google Fonts & Font Awesome 6 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800;900&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            min-height: 100vh;
+            background: #0a0c12;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        .hero-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format');
+            background-size: cover;
+            background-position: center 30%;
+            background-repeat: no-repeat;
+            filter: brightness(0.45) contrast(1.1) saturate(1.15);
+            transition: filter 0.3s;
+        }
+        .overlay-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 70% 20%, rgba(255, 215, 0, 0.08), rgba(0, 0, 0, 0.8) 85%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        /* 开始界面 */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background: rgba(5, 7, 15, 0.92);
+            backdrop-filter: blur(24px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1), visibility 0.6s;
+            visibility: visible;
+            opacity: 1;
+        }
+        .start-card {
+            text-align: center;
+            background: rgba(15, 20, 35, 0.7);
+            backdrop-filter: blur(24px);
+            border-radius: 72px;
+            padding: 2rem 2rem;
+            max-width: 600px;
+            width: 85%;
+            border: 2px solid rgba(255, 200, 100, 0.7);
+            box-shadow: 0 30px 50px rgba(0,0,0,0.5);
+            animation: fadeInUp 0.8s ease;
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px);} to { opacity: 1; transform: translateY(0);} }
+        .start-title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(1.6rem, 8vw, 2.8rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #FFF5DF, #FFD58C, #FFB347);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .start-game-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(145deg, rgba(255,215,120,0.2), rgba(255,140,50,0.4));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem auto;
+            cursor: pointer;
+            border: 2px solid #ffb347;
+        }
+        .start-game-icon i { font-size: 2.8rem; color: #FFE484; }
+        .start-btn, .author-btn {
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 60px;
+            cursor: pointer;
+            margin: 0 6px;
+            border: none;
+        }
+        .start-btn { background: linear-gradient(95deg, #ffb347, #ff8c42); color: #1f1a10; }
+        .author-btn { background: rgba(80,70,100,0.8); border:1px solid #ffbc6e; color:#FFE4B5; }
+        .button-group { display: flex; gap: 12px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+        /* 主界面 */
+        .game-main { opacity: 0; visibility: hidden; transition: opacity 0.6s ease, visibility 0.6s; position: relative; z-index: 10; }
+        .dashboard { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem 1.5rem; display: flex; gap: 1.2rem; flex-wrap: wrap; }
+        .rank-section, .stats-section { background: rgba(8,12,24,0.7); backdrop-filter: blur(14px); border-radius: 36px; padding: 1rem; border: 1px solid rgba(255,200,100,0.45); }
+        .rank-section { flex: 1.2; min-width: 260px; }
+        .stats-section { flex: 1.2; min-width: 240px; }
+        .central-hero { flex: 2.8; min-width: 320px; background: rgba(12,16,28,0.7); backdrop-filter: blur(18px); border-radius: 48px; border: 1px solid rgba(255,190,80,0.6); padding: 1.2rem; }
+        .rank-header { font-size: 1.1rem; font-weight: 800; border-left: 4px solid #ffb347; padding-left: 12px; margin-bottom: 0.8rem; }
+        .rank-list { list-style: none; max-height: 260px; overflow-y: auto; }
+        .rank-item { display: flex; justify-content: space-between; padding: 8px 4px; border-bottom: 1px solid rgba(255,215,140,0.2); font-size: 0.85rem; }
+        .our-class-highlight { background: linear-gradient(90deg, rgba(255,180,70,0.25), transparent); border-left: 3px solid #ffb347; }
+        .rank-stats { font-size: 0.65rem; color: #ffcf8a; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin: 0.8rem 0; }
+        .subject-btn, .random-event-btn, .counter-btn {
+            background: rgba(0,0,0,0.6); border: 1px solid #ffbc6e; padding: 6px 4px; border-radius: 40px;
+            font-weight: 700; font-size: 0.75rem; cursor: pointer; color: #FFE4B5; transition: 0.1s;
+        }
+        .subject-btn:hover, .random-event-btn:hover, .counter-btn:hover { background: #ffb347; color:#1f1a10; transform: scale(1.02);}
+        .random-event-btn { background: linear-gradient(95deg, #a05e2c, #d48d3b); color: white; }
+        .counter-btn { background: linear-gradient(95deg, #ffb347, #ff8c42); width: 100%; margin-top: 0.6rem; font-size: 1rem; }
+        .timer-box { background: #00000055; border-radius: 28px; padding: 10px; text-align: center; margin-bottom: 12px; }
+        .timer-digits { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: bold; color: #ffbc6e; }
+        .progress-bg { background: rgba(0,0,0,0.65); border-radius: 60px; height: 10px; overflow: hidden; margin: 6px 0; }
+        .progress-fill { height: 100%; border-radius: 60px; transition: width 0.4s; }
+        .fill-ability { background: linear-gradient(90deg, #FFB347, #FF6F3C); }
+        .fill-mind { background: linear-gradient(90deg, #48C9B0, #1F9D8A); }
+        .achievement-toast {
+            position: fixed; top: 15%; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #2a2a3a, #1a1a2a); border-left: 8px solid #ffd966;
+            border-radius: 20px; padding: 10px 20px; display: flex; align-items: center; gap: 12px;
+            z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            animation: slideDown 0.4s ease forwards, fadeOut 0.5s ease 3.5s forwards;
+            backdrop-filter: blur(12px); font-family: 'Orbitron', monospace;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-50px);} to { opacity: 1; transform: translateX(-50%) translateY(0);} }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        .achievement-icon { font-size: 1.6rem; color: #ffd966; }
+        .achievement-text { font-weight: bold; font-size: 1rem; }
+        .ending-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.88); backdrop-filter: blur(12px); z-index: 2000;
+            display: flex; align-items: center; justify-content: center; animation: fadeInEnding 0.5s ease;
+        }
+        .ending-card { background: linear-gradient(145deg, #1f1b2e, #0e0b1a); border-radius: 48px; padding: 1.8rem; text-align: center; border: 3px solid #ffd966; max-width: 500px; width: 85%; }
+        .ending-title { font-size: 2rem; font-weight: 900; margin-bottom: 0.8rem; }
+        .restart-btn { background: #ffb347; border: none; padding: 10px 24px; border-radius: 60px; font-weight: bold; cursor: pointer; margin-top: 16px; }
+        .confetti { position: fixed; width: 8px; height: 8px; background: gold; opacity: 0.8; animation: fall 2.5s linear forwards; z-index: 2001; pointer-events: none; }
+        @keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1;} 100% { transform: translateY(110vh) rotate(360deg); opacity: 0;} }
+        .custom-alert { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); border: 2px solid #ffbc6e; border-radius: 40px; padding: 20px 28px; text-align: center; z-index: 2002; color: #FFE4B5; max-width: 380px; }
+        @media (max-width: 1000px) { .dashboard { flex-direction: column; } }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .achievements-preview { background: #00000055; border-radius: 20px; padding: 8px; margin-top: 12px; font-size: 0.7rem; text-align: center; max-height: 140px; overflow-y: auto; }
+        .click-ripple {
+            position: fixed;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,200,100,0.7) 0%, rgba(255,80,40,0) 70%);
+            transform: scale(0);
+            pointer-events: none;
+            z-index: 9999;
+            animation: rippleAnim 0.6s ease-out forwards;
+        }
+        @keyframes rippleAnim { to { transform: scale(12); opacity: 0; } }
+    </style>
+</head>
+<body>
+<div class="hero-background"></div>
+<div class="overlay-glow"></div>
+
+<!-- 开始界面 -->
+<div class="start-screen" id="startScreen">
+    <div class="start-card">
+        <div class="start-title">十三班逆袭日志</div>
+        <div class="start-sub" style="margin:8px 0;color:#FFE0AA;">25项成就 · 班级逆袭模拟器</div>
+        <div class="start-game-icon" id="startIconBtn"><i class="fas fa-play"></i></div>
+        <div class="button-group">
+            <button class="start-btn" id="startBtn">开启逆袭之路 <i class="fas fa-arrow-right"></i></button>
+            <button class="author-btn" id="authorBtn"><i class="fas fa-pen-fancy"></i> 作者的话</button>
+        </div>
+    </div>
+</div>
+
+<!-- 主游戏界面 -->
+<div class="game-main" id="gameMain">
+    <div class="dashboard">
+        <div class="rank-section">
+            <div class="rank-header"><i class="fas fa-ranking-star"></i> 年级班排 (实时)</div>
+            <ul class="rank-list" id="rankList"></ul>
+            <div class="timer-box">
+                <div><i class="fas fa-hourglass-half"></i> 剩余冲刺天数</div>
+                <div class="timer-digits" id="dayCounter">30</div>
+                <div id="nextTestHint" style="font-size:0.65rem;"></div>
+            </div>
+            <div class="achievements-preview" id="achievementListPanel">🏆 成就进度: 0/25 &nbsp; 解锁更多隐藏内容</div>
+        </div>
+
+        <div class="central-hero">
+            <div class="main-title" style="font-size:1.4rem;">⚡ 十三班逆袭日志 ⚡</div>
+            <div class="principal-quote" style="font-size:0.75rem;"><i class="fas fa-chalkboard-user"></i> Y校长：三十天内让我看到惊喜！</div>
+            <div class="core-rank-area" style="padding:0.6rem;"><div>十三班 · 当前校排</div><div class="rank-number-giant" id="giantRankDisplay" style="font-size:1.3rem; background:#ffb347; display:inline-block; padding:0.2rem 1rem; border-radius:40px;">第五名</div><div id="rankSubtext" style="font-size:0.6rem; margin-top:4px;"></div></div>
+            <div class="subjects-grid" id="subjectsGrid"></div>
+            <div style="margin: 6px 0;"><button class="random-event-btn" id="singleRandomBtn" style="width:100%;"><i class="fas fa-dice-d6"></i> 随机事件（包含留堂/研学等）</button></div>
+            <div class="log-message-box" style="background:rgba(0,0,0,0.4); border-radius:28px; padding:8px; margin:8px 0; min-height:70px;"><div class="inspire-message" id="inspireMsg">全成就系统已加载！点击任何按钮推进天数，解锁隐藏成就。</div></div>
+            <button class="counter-btn" id="counterAttackBtn"><i class="fas fa-rocket"></i> 逆袭冲锋 · 综合集训</button>
+        </div>
+
+        <div class="stats-section">
+            <div class="rank-header" style="border-left-color: #48C9B0;">📊 十三班实时状态</div>
+            <div>能力指数 <span id="abilityPercent">85</span></div><div class="progress-bg"><div class="progress-fill fill-ability" id="abilityFill" style="width:85%"></div></div>
+            <div style="margin-top:12px;">心态韧性 <span id="mindPercent">50</span></div><div class="progress-bg"><div class="progress-fill fill-mind" id="mindFill" style="width:50%"></div></div>
+            <div id="testLogArea" style="margin-top:12px; font-size:0.65rem; background:#00000033; border-radius:20px; padding:6px; text-align:center;">🌟 每10天全校统测 · 成就触发弹窗</div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+    // ---------- 班级数据 ----------
+    let classes = [
+        { name: "十九班", ability: 100, mentality: 90, isOur: false },
+        { name: "十八班", ability: 90,  mentality: 90, isOur: false },
+        { name: "十七班", ability: 80,  mentality: 80, isOur: false },
+        { name: "十六班", ability: 75,  mentality: 70, isOur: false },
+        { name: "十三班", ability: 85,  mentality: 50, isOur: true }
+    ];
+    let ourClass = classes.find(c => c.isOur);
+    let daysLeft = 30, actionsTaken = 0, gameActive = true, endingTriggered = false;
+    
+    // ======================= 成就系统 =======================
+    let achievements = {
+        chenchi: false, higherSpirit: false, rocket: false, 千年老二: false, 断层领先: false,
+        群雄逐鹿: false, 复仇者联盟: false, 生死时速: false, 钢铁意志: false, 学神降世: false,
+        完美平衡: false, 绝地反弹: false, 破而后立: false, 霉运缠身: false, 天选之子: false,
+        百味杂陈: false, 倒霉蛋: false, 欧皇时刻: false, 全勤标兵: false, 考试之王: false,
+        功亏一篑: false, 和平使者: false, 极限卡点: false, 神秘代码: false, 校长亲笔信: false,
+        十六班的诅咒: false, 逆天改命: false, 佛系逆袭: false
+    };
+    let achievementCount = () => Object.values(achievements).filter(v=>v===true).length;
+    // 辅助记录变量
+    let eventHistory = new Set();        // 触发过的随机事件名称(用于百味杂陈)
+    let negativeStreak = 0, positiveStreak = 0;
+    let negativeEventCount = 0;          // 神秘人放屁次数
+    let usedCounterAttack = false;
+    let abilityEverLow = false;
+    let firstPlaceHistory = new Set();
+    let lastTestRanks = [];
+    let fightEventTriggered = false;
+    let lastActionSumEqual = false;
+    let lastFiveDaysRankWasFifth = false;
+    
+    // 成就弹窗 & UI更新
+    function showAchievement(title, subtitle, icon = "🏆") {
+        const toast = document.createElement('div'); toast.className = 'achievement-toast';
+        toast.innerHTML = `<div class="achievement-icon">${icon}</div><div><div class="achievement-text">✨ ${title} ✨</div><div class="achievement-sub">${subtitle}</div></div>`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3800);
+        updateAchievementPanel();
+    }
+    function updateAchievementPanel() { 
+        let panel = document.getElementById('achievementListPanel');
+        if(panel) panel.innerHTML = `🏆 成就进度: ${achievementCount()}/25 &nbsp; <i class="fas fa-trophy"></i>`;
+    }
+    
+    // 通用成就检测 (每次关键更新调用)
+    function checkAllAchievements(extra = {}) {
+        const ranked = recalcRankingsByScores();
+        const ourRankObj = ranked.find(r=>r.isOur);
+        const currentRank = ourRankObj ? ourRankObj.rank : 5;
+        const scores = ranked.map(r=>r.score);
+        const ourScore = ourRankObj ? ourRankObj.score : 0;
+        const maxScore = Math.max(...scores);
+        // 1 陈池NB
+        if(!achievements.chenchi && ranked[0]?.className === "十六班") { achievements.chenchi=true; showAchievement("陈池NB","十六班逆袭全校第一！","🐉"); }
+        // 2 higher spirit
+        if(!achievements.higherSpirit && ourClass.mentality >= 100) { achievements.higherSpirit=true; showAchievement("higher spirit！","十三班心态突破100！","💪"); }
+        // 3 火箭在外部检测
+        // 4 断层领先
+        if(!achievements.断层领先 && ourScore >= maxScore+15) { achievements.断层领先=true; showAchievement("断层领先","测试分数领先第二名15分以上！","📈"); }
+        // 5 群雄逐鹿
+        if(ranked[0]) firstPlaceHistory.add(ranked[0].className);
+        if(!achievements.群雄逐鹿 && firstPlaceHistory.size >= 5) { achievements.群雄逐鹿=true; showAchievement("群雄逐鹿","全部五个班级都曾登顶第一！","👑"); }
+        // 6 复仇者联盟
+        const rankNames = ranked.map(r=>r.className);
+        if(!achievements.复仇者联盟 && rankNames.indexOf("十九班") > rankNames.indexOf("十三班") && rankNames.indexOf("十三班")===0) { achievements.复仇者联盟=true; showAchievement("复仇者联盟","十三班超越十九班并保持榜首！","⚡"); }
+        // 7 钢铁意志
+        if(!achievements.钢铁意志 && ourClass.mentality >= 200) { achievements.钢铁意志=true; showAchievement("钢铁意志","心态值突破200！","🧠"); }
+        // 8 学神降世
+        if(!achievements.学神降世 && ourClass.ability >= 200) { achievements.学神降世=true; showAchievement("学神降世","能力值突破200！","📚"); }
+        // 9 完美平衡
+        if(!achievements.完美平衡 && ourClass.ability>=150 && ourClass.mentality>=150) { achievements.完美平衡=true; showAchievement("完美平衡","能力与心态双双突破150！","⚖️"); }
+        // 10 破而后立
+        if(!achievements.破而后立 && abilityEverLow && ourClass.ability >= 100) { achievements.破而后立=true; showAchievement("破而后立","能力从低谷反弹至100以上！","🔄"); }
+        // 11 百味杂陈
+        if(!achievements.百味杂陈 && eventHistory.size >= 14) { achievements.百味杂陈=true; showAchievement("百味杂陈","触发过全部14种随机事件！","🎭"); }
+        // 12 倒霉蛋
+        if(!achievements.倒霉蛋 && negativeEventCount >= 3) { achievements.倒霉蛋=true; showAchievement("倒霉蛋","触发过3次神秘人放了个屁事件！","💨"); }
+        // 13 考试之王
+        if(lastTestRanks.length===3 && !achievements.考试之王 && lastTestRanks[0] < lastTestRanks[1] && lastTestRanks[1] < lastTestRanks[2]) {
+            achievements.考试之王=true; showAchievement("考试之王","三次测试排名节节攀升！","📊");
+        }
+        // 14 和平使者
+        if(!achievements.和平使者 && !fightEventTriggered) { achievements.和平使者=true; showAchievement("和平使者","从未触发重大打架事故","🕊️"); }
+        // 15 佛系逆袭
+        if(!achievements.佛系逆袭 && !usedCounterAttack && (currentRank===1 || currentRank===2)) { achievements.佛系逆袭=true; showAchievement("佛系逆袭","从不使用逆袭冲锋而获得高排名","🧘"); }
+        // 16 逆天改命结局检测
+        if(!achievements.逆天改命 && actionsTaken>=25 && lastFiveDaysRankWasFifth && currentRank===1) { achievements.逆天改命=true; showAchievement("逆天改命","最后5天从第五冲上第一","🌠"); }
+    }
+    
+    function calculateTestScore(ability, mentality) { let base = ability*0.7 + mentality*0.3; let variance = Math.floor(Math.random()*11)-5; return Math.min(100,Math.max(0,base+variance)); }
+    function recalcRankingsByScores() {
+        let rankings = classes.map(c => ({ name:c.name, score:calculateTestScore(c.ability,c.mentality), ability:c.ability, mentality:c.mentality, isOur:c.isOur }));
+        rankings.sort((a,b)=>b.score-a.score);
+        return rankings.map((r,i)=>({ rank:i+1, className:r.name, isOur:r.isOur, ability:r.ability, mentality:r.mentality, score:r.score }));
+    }
+    let lastOurRank = 5;
+    function renderFullRankings() {
+        const ranked = recalcRankingsByScores();
+        const rankListEl = document.getElementById('rankList');
+        if(rankListEl){
+            rankListEl.innerHTML = '';
+            ranked.forEach(item => {
+                const li = document.createElement('li'); li.className = 'rank-item';
+                if(item.isOur) li.classList.add('our-class-highlight');
+                li.innerHTML = `<span><span class="rank-number">${item.rank}</span> ${item.className} ${item.isOur?'⭐':''}</span><span class="rank-stats">💪${Math.floor(item.ability)} ❤️${Math.floor(item.mentality)}</span>`;
+                rankListEl.appendChild(li);
+            });
+        }
+        const our = ranked.find(r=>r.isOur);
+        if(our){
+            let txt = our.rank===1?'第一名':our.rank===2?'第二名':our.rank===3?'第三名':our.rank===4?'第四名':'第五名';
+            document.getElementById('giantRankDisplay').innerText = txt;
+            if(our.rank===1) document.getElementById('rankSubtext').innerHTML='<i class="fas fa-crown"></i> 巅峰王者！';
+            else if(our.rank===2) document.getElementById('rankSubtext').innerHTML='<i class="fas fa-chart-line"></i> 距顶峰一步之遥';
+            else document.getElementById('rankSubtext').innerHTML='<i class="fas fa-arrow-up"></i> 逆袭冲刺中';
+            if(!achievements.rocket && lastOurRank===5 && our.rank===1) { achievements.rocket=true; showAchievement("火箭？！","从第五名飙升至第一名！","🚀"); }
+            lastOurRank = our.rank;
+            if(actionsTaken>=25 && lastOurRank===5) lastFiveDaysRankWasFifth = true;
+        }
+        checkAllAchievements();
+        return ranked;
+    }
+    
+    function randomizeOtherClasses() { for(let cls of classes) if(!cls.isOur) { cls.ability = Math.max(0, cls.ability + (Math.floor(Math.random()*21)-8)); cls.mentality = Math.max(0, cls.mentality + (Math.floor(Math.random()*26)-10)); } }
+    
+    function updateStatsUI() {
+        document.getElementById('abilityFill').style.width = `${Math.min(100,ourClass.ability)}%`;
+        document.getElementById('abilityPercent').innerText = Math.floor(ourClass.ability);
+        document.getElementById('mindFill').style.width = `${Math.min(100,ourClass.mentality)}%`;
+        document.getElementById('mindPercent').innerText = Math.floor(ourClass.mentality);
+        document.getElementById('dayCounter').innerText = daysLeft;
+        let nextTest = 10 - (actionsTaken % 10); if(nextTest===10) nextTest=10;
+        document.getElementById('nextTestHint').innerText = `距离下次测试: ${nextTest}次行动`;
+        if(daysLeft<=0 && !endingTriggered && gameActive) { gameActive=false; triggerEnding(); }
+        checkAllAchievements();
+    }
+    function setMessage(title,desc){ document.getElementById('inspireMsg').innerHTML = `<strong>${title}</strong><br>${desc}`; }
+    function createRipple(e){ const ripple=document.createElement('div'); ripple.className='click-ripple'; let x=e.clientX,y=e.clientY; if(!x && e.touches){x=e.touches[0].clientX; y=e.touches[0].clientY;} ripple.style.left=`${x-20}px`; ripple.style.top=`${y-20}px`; document.body.appendChild(ripple); setTimeout(()=>ripple.remove(),600); }
+    
+    // 核心行动
+    function performAction(abilityDelta, mindDelta, actionName, extraDesc, eventName=null, isNegative=false, totalDelta=0, isFight=false) {
+        if(!gameActive || endingTriggered) return false;
+        if(daysLeft<=0){ if(!endingTriggered) triggerEnding(); return false; }
+        let newAbility = Math.max(0, ourClass.ability + abilityDelta);
+        let newMind = Math.max(0, ourClass.mentality + mindDelta);
+        if(ourClass.ability < 10) abilityEverLow = true;
+        ourClass.ability = newAbility; ourClass.mentality = newMind;
+        randomizeOtherClasses();
+        daysLeft--; actionsTaken++;
+        updateStatsUI();
+        if(actionsTaken % 10 === 0 && actionsTaken>0){
+            const ranked = recalcRankingsByScores(); const ourR = ranked.find(r=>r.isOur); if(ourR) lastTestRanks.push(ourR.rank);
+            if(lastTestRanks.length>3) lastTestRanks.shift();
+            setMessage("📝 十天测试", `排名更新为第${ourR?.rank}名`);
+            renderFullRankings();
+        } else renderFullRankings();
+        let deltaAbs = abilityDelta>=0?`+${abilityDelta}`:`${abilityDelta}`;
+        let deltaMind = mindDelta>=0?`+${mindDelta}`:`${mindDelta}`;
+        setMessage(`📅 第${30-daysLeft}天 · ${actionName}`, `十三班:能力 ${deltaAbs} | 心态 ${deltaMind} 。剩余${daysLeft}天。${extraDesc}`);
+        if(eventName) eventHistory.add(eventName);
+        if(isNegative) negativeStreak++; else negativeStreak=0;
+        if(isNegative===false && (abilityDelta+mindDelta)>8) positiveStreak++; else if(isNegative) positiveStreak=0;
+        if(totalDelta>=40 && !achievements.欧皇时刻) { achievements.欧皇时刻=true; showAchievement("欧皇时刻","单次获得能力+心态总增量超过40点！","🍀"); }
+        if(negativeStreak>=3 && !achievements.霉运缠身) { achievements.霉运缠身=true; showAchievement("霉运缠身","连续3次随机事件负面效果","😭"); }
+        if(positiveStreak>=2 && !achievements.天选之子) { achievements.天选之子=true; showAchievement("天选之子","连续2次高正向事件","✨"); }
+        if(eventName === "神秘人放了个屁") negativeEventCount++;
+        if(isFight) fightEventTriggered = true;
+        if(abilityDelta === mindDelta && abilityDelta !==0) { lastActionSumEqual=true; if(!achievements.神秘代码) { achievements.神秘代码=true; showAchievement("神秘代码","某次事件能力与心态变化完全相同","🔢"); } }
+        checkAllAchievements();
+        return true;
+    }
+    
+    const fullRandomEffects = [
+        { name:"学霸降临", ability:18, mind:12, desc:"学神附体", pos:true }, { name:"心理辅导", ability:4, mind:22, desc:"心态升华", pos:true },
+        { name:"魔鬼周测", ability:20, mind:-8, desc:"能力飙升心态承压", pos:false }, { name:"班级点名批评", ability:12, mind:-30, desc:"知耻后勇", pos:false },
+        { name:"重大打架事故", ability:-5, mind:-45, desc:"双崩", pos:false, fight:true }, { name:"神秘人放了个屁", ability:-18, mind:-22, desc:"混乱下滑", pos:false },
+        { name:"迟到风波", ability:-12, mind:-18, desc:"纪律松散", pos:false }, { name:"校长表扬", ability:8, mind:15, desc:"士气大增", pos:true },
+        { name:"学科竞赛获奖", ability:25, mind:10, desc:"实力飞跃", pos:true }, { name:"集体观影", ability:2, mind:18, desc:"心态大振", pos:true },
+        { name:"流感侵袭", ability:-15, mind:-12, desc:"状态下滑", pos:false }, { name:"食堂加鸡腿", ability:3, mind:8, desc:"小振奋", pos:true },
+        { name:"放学留堂", ability:20, mind:-10, desc:"刷题能力+20，心态-10", pos:false }, { name:"研学旅行", ability:1, mind:20, desc:"心态大幅提升", pos:true }
+    ];
+    function getRandomEvent() { return fullRandomEffects[Math.floor(Math.random()*fullRandomEffects.length)]; }
+    
+    // 结局
+    function triggerEnding() {
+        if(endingTriggered) return; endingTriggered=true;
+        const ranked = recalcRankingsByScores(); const ourR = ranked.find(r=>r.isOur); const finalRank = ourR?ourR.rank:5;
+        if(!achievements.千年老二 && finalRank===2) { achievements.千年老二=true; showAchievement("千年老二","最终排名恰好为第二名","🥈"); }
+        if(!achievements.全勤标兵 && actionsTaken===30) { achievements.全勤标兵=true; showAchievement("全勤标兵","三十天每天都进行了行动","📅"); }
+        if(!achievements.功亏一篑 && lastTestRanks[2]===1 && finalRank>=3) { achievements.功亏一篑=true; showAchievement("功亏一篑","最后一次测试第一但结局掉出前三","😞"); }
+        if(!achievements.极限卡点 && actionsTaken===30 && daysLeft===0 && finalRank===1 && lastOurRank!==1) { achievements.极限卡点=true; showAchievement("极限卡点","最后一天恰好冲上第一名","⏱️"); }
+        if(!achievements.校长亲笔信 && finalRank===1 && achievements.断层领先 && achievements.钢铁意志) { achievements.校长亲笔信=true; showAchievement("校长亲笔信","三重荣耀：二中之王+断层领先+钢铁意志","📜"); }
+        if(!achievements.十六班的诅咒 && ranked[3]?.className==="十六班" && finalRank===5) { achievements.十六班的诅咒=true; showAchievement("十六班的诅咒","十六班从未第一且最终垫底","🔮"); }
+        updateAchievementPanel();
+        let endingTitle="", endingDesc="", bgColor="#FFD966", confetti=0;
+        if(finalRank===1) { endingTitle="🏆 二中之王 🏆"; endingDesc="十三班以绝对实力登顶年级之巅！"; confetti=200; }
+        else if(finalRank===2) { endingTitle="🌟 超级突破 🌟"; endingDesc="十三班斩获年级第二！"; confetti=120; }
+        else if(finalRank===3) { endingTitle="🎉 重回宝座 🎉"; endingDesc="十三班重返前三强！"; confetti=80; }
+        else if(finalRank===4) { endingTitle="📉 略有下滑 📉"; endingDesc="十三班排名第四。"; confetti=30; }
+        else { endingTitle="😞 萎靡不振 😞"; endingDesc="十三班停留在第五名。"; confetti=10; }
+        const endingDiv = document.createElement('div'); endingDiv.className='ending-overlay';
+        endingDiv.innerHTML = `<div class="ending-card"><div class="ending-title" style="color:${bgColor};">${endingTitle}</div><div>${endingDesc}</div><div style="margin:10px 0;">成就解锁: ${achievementCount()}/25</div><button class="restart-btn" id="restartBtn">重新开始逆袭</button></div>`;
+        document.body.appendChild(endingDiv);
+        for(let i=0;i<confetti;i++) setTimeout(()=>{let c=document.createElement('div');c.className='confetti';c.style.left=Math.random()*100+'%';c.style.backgroundColor=`hsl(${Math.random()*360},100%,60%)`;document.body.appendChild(c);setTimeout(()=>c.remove(),2500);},i*15);
+        document.getElementById('restartBtn')?.addEventListener('click',()=>window.location.reload());
+    }
+    
+    // UI 构建
+    const subjectNames = { chinese:'重视语文', math:'重视数学', english:'重视英语', physics:'重视物理', chemistry:'重视化学', history:'重视历史', politics:'重视政治' };
+    const subjects = ['chinese','math','english','physics','chemistry','history','politics'];
+    function buildUI(){
+        const grid = document.getElementById('subjectsGrid');
+        subjects.forEach(sub=>{
+            const btn = document.createElement('button'); btn.className='subject-btn';
+            btn.innerHTML = `<i class="fas ${sub==='chinese'?'fa-book-open':sub==='math'?'fa-calculator':sub==='english'?'fa-language':sub==='physics'?'fa-atom':sub==='chemistry'?'fa-flask':sub==='history'?'fa-landmark':'fa-gavel'}"></i> ${subjectNames[sub]}`;
+            btn.onclick = (e)=>{ createRipple(e); const ev=getRandomEvent(); performAction(ev.ability, ev.mind, subjectNames[sub], `${ev.name}: ${ev.desc}`, ev.name, !ev.pos, ev.ability+ev.mind, ev.fight||false); };
+            grid.appendChild(btn);
+        });
+        document.getElementById('singleRandomBtn').onclick = (e)=>{ createRipple(e); const ev=getRandomEvent(); performAction(ev.ability, ev.mind, `随机事件`, `${ev.name}: ${ev.desc}`, ev.name, !ev.pos, ev.ability+ev.mind, ev.fight||false); };
+        document.getElementById('counterAttackBtn').onclick = (e)=>{ createRipple(e); usedCounterAttack=true; const ev=getRandomEvent(); performAction(ev.ability, ev.mind, `逆袭冲锋·集训`, `${ev.name}: ${ev.desc}`, ev.name, !ev.pos, ev.ability+ev.mind, ev.fight||false); };
+    }
+    
+    // 启动游戏
+    const startDiv=document.getElementById('startScreen'), gameDiv=document.getElementById('gameMain');
+    document.getElementById('startBtn').onclick = ()=>{ startDiv.style.opacity='0'; startDiv.style.visibility='hidden'; gameDiv.style.visibility='visible'; gameDiv.style.opacity='1'; renderFullRankings(); setMessage("✨ 班级逆袭模拟器 ✨","挑战25项成就，冲击二中之王！"); };
+    document.getElementById('startIconBtn').onclick = ()=>{ startDiv.style.opacity='0'; startDiv.style.visibility='hidden'; gameDiv.style.visibility='visible'; gameDiv.style.opacity='1'; renderFullRankings(); setMessage("✨ 班级逆袭模拟器 ✨","点击任何按钮推进天数！"); };
+    document.getElementById('authorBtn').onclick = ()=>{
+        const a=document.createElement('div'); a.className='custom-alert'; a.innerHTML='<div><i class="fas fa-heart"></i> 作者的话</div><div>作者你猜！仅此纪念我们三年的时光，AI生成，孩子太菜了o(╥﹏╥)o<br>目前为demo版本 · 25项成就已实装，多周目挑战！</div><button id="closeAlert" style="margin-top:12px;background:#ffb347;border:none;padding:6px 20px;border-radius:40px;">明白</button>';
+        document.body.appendChild(a); document.getElementById('closeAlert').onclick=()=>a.remove();
+    };
+    ourClass.ability=85; ourClass.mentality=50; daysLeft=30; actionsTaken=0; gameActive=true; endingTriggered=false; usedCounterAttack=false;
+    updateStatsUI(); buildUI(); renderFullRankings();
+})();
+</script>
+</body>
+</html>
